@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package tarefas;
 import javax.swing.JOptionPane;
 /**
@@ -10,71 +5,82 @@ import javax.swing.JOptionPane;
  * @author marcosceron
  */
 public class PasseioDoCavalo {
-    public int n; // tamanho do lado do tabuleiro
-    public int i, j;
-    public static final int max=10;
+    public static int num;
+    public static int max=10;
+    public static int[][] tabuleiro = new int[max][max];
+    public static int numSqr;
+    public static int h[] = {2,1,-1,-2,-2,-1,1,2}; // Movimentos na horizontal
+    public static int v[] = {1,2,2,1,-1,-2,-2,-1}; // Movimentos na vertical
+    public static boolean done;
+    public static int count=0;
     
-    public static void imprimir(int n, int m[][]) {
-        int x, y;
-        for (x=0; x<n; x++) {
-            for(y=0; y<n; y++) {
-                System.out.print(" " + m[x][y]);
-            }
-            System.out.println("");
+    public static boolean aceitavel(int x, int y) {
+        if (x>=0 && x<=num-1 && y>=0 && y<=num-1 && tabuleiro[x][y]==0) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
     
-    
-    public static boolean passeio(int n, int x, int y, int pos, int m[][], int xMove[], int yMove[]) {
-        int k, nextX, nextY;
-        if (pos == n*n) {
-            return true;
-        }
-        for (k=0; k<8; k++) {
-            nextX = x + xMove[k];
-            nextY = y + yMove[k];
-            
-            if (((nextX >= 0) && (nextX < n)) && ((nextY >= 0) && (nextY < n))) {
-                if (m[nextX][nextY]==0) {
-                    m[nextX][nextY]=pos+1;
+    public static boolean tenta(int i, int x, int y) {
+        done = i > numSqr;
+        int k=0, nextX, nextY;
+        while (!done && k<8) {
+            if (k==7) { // Se forem tentados todos os movimentos possíveis, backtracking.
+                System.out.println("Backtracking " + count);
+                count++;
+            }
+            nextX = x + h[k]; // Próximo movimento x
+            nextY = y + v[k]; // Próximo moviment y
+            if (aceitavel(nextX, nextY)) {
+                tabuleiro[nextX][nextY] = i;
+                done = tenta(i+1, nextX, nextY); // Tenta outro movimento
+                if (!done) {
+                    tabuleiro[nextX][nextY] = 0; // Sem sucesso, descarta movimento
                 }
             }
-            if (passeio(n, nextX, nextY, pos+1, m, xMove, yMove)) {
-                return true;
-            }
-            else {
-               m[nextX][nextY] = 0;
-            }
+            k++; // Passa ao próximo movimento possível
+            
         }
-        
-        return false;
+        return done;
+    }
+    
+    public static void imprime(int x, int y) {
+        tabuleiro[x][y] = 1;
+        done = tenta(2, x, y);
+        String str = "";
+        if (done) {
+            for (x=0; x<num; x++) {
+                for (y=0; y<num; y++) {
+                    if (tabuleiro[x][y] < 10) {
+                        str += "0" + tabuleiro[x][y] + " ";
+                    }
+                    else {
+                        str += tabuleiro[x][y] + " ";
+                    }
+                }
+                str += "\n";
+            }
+            System.out.print(str);
+        }
+        else {
+            System.out.println("Não há passeio possível\n");
+        }
     }
     
     public static void main(String[] args) {
+       // n=6
+       num=6; // Número de posições do tabuleiro.
+       int startX = Integer.parseInt(JOptionPane.showInputDialog("X inicial: "));
+       int startY = Integer.parseInt(JOptionPane.showInputDialog("Y inicial: "));
+       numSqr=num*num;
        
-        int m[][] = new int[max][max];
-        int x, y, n, startX, startY;
-        
-        int[] xMove = {2,1,-1,-2,-2,-1,1,2};
-        int[] yMove = {1,2,2,1,-1,-2,-2,-1};
-        
-        n = Integer.parseInt(JOptionPane.showInputDialog("Tamanho do tabuleiro"));
-        startX = Integer.parseInt(JOptionPane.showInputDialog("X Inicial"));
-        startY = Integer.parseInt(JOptionPane.showInputDialog("Y Inicial"));
-        
-        for (x=0; x<n; x++) {
-            for(y=0; y<n; y++) {
-                m[x][y] = 0;
-            }
-        }
-        m[startX-1][startY-1]=1;
-        
-        if(passeio(n, startX-1, startY-1, 1, m, xMove, yMove)) {
-            imprimir(n, m);
-        }
-        else {
-            System.out.println("Não existe solução!");
-        }
-        
+       for (int x=0; x<num; x++) {
+           for (int y=0; y<num; y++) {
+               tabuleiro[x][y]=0;
+           }
+       }
+       imprime(startX,startY);
     }
 }
